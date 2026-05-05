@@ -1318,7 +1318,7 @@ export default function App() {
                       matrixViewType={matrixViewType}
                       devStats={matrixDevStats} 
                       allBugs={activeSplitData}
-                      unfilteredBugs={cleanTotalBugs} 
+                      unfilteredBugs={activeSplitData} 
                       selectedSeverity={severityFilter}
                       onChartClick={handleChartClick}
                       onExportPDF={handleSectionExport}

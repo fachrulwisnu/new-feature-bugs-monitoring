@@ -16,8 +16,8 @@ import {
   PieChart,
   Pie,
   Cell,
-  AreaChart,
-  Area,
+  LineChart,
+  Line,
 } from "recharts";
 import { BugRecord, DevStats } from "../types";
 import { FileDown, Printer, ArrowLeft } from "lucide-react";
@@ -62,9 +62,9 @@ export function DashboardCharts({ devStats = [], allBugs = [], unfilteredBugs = 
     if (!targetYear) {
       // Level 1: Yearly
       const yearlyMap = dataToUse.reduce((acc: any, bug) => {
-        const periodParts = bug.periode?.split('-');
-        const year = periodParts && periodParts.length === 2 ? periodParts[1] : "UNKNOWN";
-        if (year === "UNKNOWN") return acc;
+        const yearMatch = String(bug.periode).match(/\d{4}/);
+        const year = yearMatch ? yearMatch[0] : 'Unknown';
+        if (year === "Unknown") return acc;
 
         if (!acc[year]) {
           acc[year] = { 
@@ -82,9 +82,9 @@ export function DashboardCharts({ devStats = [], allBugs = [], unfilteredBugs = 
     } else {
       // Level 2: Monthly for selected year
       const monthlyMap = dataToUse
-        .filter(bug => (bug.periode || "").endsWith(`-${targetYear}`))
+        .filter(bug => String(bug.periode).includes(targetYear))
         .reduce((acc: any, bug) => {
-          const month = bug.periode;
+          const month = bug.periode || "Unknown";
           if (!acc[month]) {
             acc[month] = { 
               periode: month, 
@@ -276,9 +276,9 @@ export function DashboardCharts({ devStats = [], allBugs = [], unfilteredBugs = 
         </div>
         <div className="h-[320px] w-full min-h-0 min-w-0">
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart 
+            <LineChart 
               data={trendChartData} 
-              margin={{ top: 0, right: 0, left: -20, bottom: 0 }}
+              margin={{ top: 20, right: 30, left: -20, bottom: 0 }}
               onClick={(data: any) => {
                 if (!trendYear && data && data.activeLabel) {
                   setTrendYear(String(data.activeLabel));
@@ -287,16 +287,6 @@ export function DashboardCharts({ devStats = [], allBugs = [], unfilteredBugs = 
                 }
               }}
             >
-              <defs>
-                <linearGradient id="color-Bug" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#F59E0B" stopOpacity={0.2}/>
-                  <stop offset="95%" stopColor="#F59E0B" stopOpacity={0}/>
-                </linearGradient>
-                <linearGradient id="color-CR" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#10B981" stopOpacity={0.2}/>
-                  <stop offset="95%" stopColor="#10B981" stopOpacity={0}/>
-                </linearGradient>
-              </defs>
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#1e293b" strokeOpacity={0.5} />
               <XAxis dataKey="periode" fontSize={10} tickLine={false} axisLine={false} tick={{ fill: '#64748b' }} />
               <YAxis fontSize={10} tickLine={false} axisLine={false} tick={{ fill: '#64748b' }} />
@@ -317,18 +307,17 @@ export function DashboardCharts({ devStats = [], allBugs = [], unfilteredBugs = 
                 wrapperStyle={{ paddingBottom: '30px', fontSize: '10px', fontWeight: 'bold' }} 
                 formatter={() => activeSeriesLabel}
               />
-              <Area
+              <Line
                 type="monotone"
                 dataKey="value"
                 name={activeSeriesLabel}
-                stackId="1"
                 stroke={activeColor}
-                fillOpacity={1}
-                fill={activeGradient}
                 strokeWidth={3}
+                dot={{ fill: activeColor, strokeWidth: 2, r: 4, stroke: "#0f172a" }}
+                activeDot={{ r: 6, strokeWidth: 0 }}
                 isAnimationActive={!isExporting}
               />
-            </AreaChart>
+            </LineChart>
           </ResponsiveContainer>
         </div>
       </div>
